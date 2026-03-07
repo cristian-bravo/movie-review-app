@@ -1,0 +1,155 @@
+.link {
+  display: block;
+}
+
+.card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  transition:
+    transform 280ms ease,
+    box-shadow 280ms ease,
+    border-color 280ms ease;
+}
+
+.card:hover {
+  transform: translateY(-6px);
+}
+
+.posterWrap {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 2 / 3;
+  border-radius: inherit;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.poster {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition:
+    transform 320ms ease,
+    filter 320ms ease;
+}
+
+.card:hover .poster {
+  transform: scale(1.06);
+  filter: saturate(1.05) contrast(1.04);
+}
+
+.catalogCard {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(10, 14, 31, 0.7);
+  box-shadow: var(--soft-shadow);
+}
+
+.catalogCard:hover {
+  border-color: rgba(255, 255, 255, 0.14);
+  box-shadow: 0 28px 70px -30px rgba(2, 6, 23, 0.96);
+}
+
+.catalogShell {
+  display: grid;
+  height: 100%;
+}
+
+.catalogBody {
+  display: grid;
+  gap: 1rem;
+  padding: 1.1rem 1.1rem 1.2rem;
+}
+
+.topRow {
+  position: absolute;
+  inset: 1rem 1rem auto;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.year,
+.rowYear {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: rgba(245, 247, 255, 0.72);
+}
+
+.title,
+.rowTitle {
+  font-family: var(--font-sora), sans-serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  color: #fff;
+}
+
+.buttonRow {
+  display: flex;
+}
+
+.buttonRow :global(.stream-button) {
+  width: 100%;
+}
+
+.rowCard {
+  box-shadow: 0 16px 36px -18px rgba(2, 6, 23, 0.88);
+}
+
+.rowCard:hover {
+  transform: translateY(-10px) scale(1.03);
+  box-shadow: 0 28px 72px -22px rgba(2, 6, 23, 0.98);
+}
+
+.rowCard:active {
+  transform: translateY(-4px) scale(0.99);
+}
+
+.rowCard .posterWrap::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(7, 10, 22, 0) 38%, rgba(7, 10, 22, 0.92) 100%),
+    linear-gradient(0deg, rgba(7, 10, 22, 0.58), rgba(7, 10, 22, 0));
+}
+
+.rowOverlay {
+  position: absolute;
+  inset: auto 0 0 0;
+  z-index: 2;
+  display: grid;
+  gap: 0.45rem;
+  padding: 1rem;
+  transform: translateY(0.35rem);
+  opacity: 0.88;
+  transition:
+    transform 260ms ease,
+    opacity 260ms ease;
+}
+
+.rowTitle {
+  font-size: 1.08rem;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .rowOverlay {
+    transform: translateY(1.2rem);
+    opacity: 0;
+  }
+
+  .rowCard:hover .poster,
+  .rowCard:focus-visible .poster {
+    transform: scale(1.1);
+    filter: saturate(1.08) contrast(1.05);
+  }
+
+  .rowCard:hover .rowOverlay,
+  .rowCard:focus-visible .rowOverlay {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

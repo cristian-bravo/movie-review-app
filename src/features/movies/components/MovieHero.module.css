@@ -1,0 +1,28 @@
+.hero {
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(120deg, rgba(10, 10, 42, 0.94) 14%, rgba(10, 10, 42, 0.8) 46%, rgba(10, 10, 42, 0.5) 100%),
+    radial-gradient(circle at top right, rgba(147, 51, 234, 0.24), transparent 30%),
+    radial-gradient(circle at bottom left, rgba(37, 99, 235, 0.2), transparent 28%);
+  pointer-events: none;
+}
+
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+  background-size: 4px 4px;
+  opacity: 0.22;
+  mix-blend-mode: soft-light;
+  pointer-events: none;
+}

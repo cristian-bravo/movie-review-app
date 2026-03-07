@@ -1,0 +1,44 @@
+[
+  {
+    "id": "review-1",
+    "movieId": "dune-part-two",
+    "user": {
+      "id": "user-1",
+      "name": "Elena Brooks",
+      "email": "elena@example.com",
+      "avatar": "/avatars/default-avatar.svg"
+    },
+    "rating": 4.5,
+    "comment": "Strong placeholder review copy that demonstrates layout, spacing, and metadata placement.",
+    "date": "2026-02-19",
+    "source": "seed"
+  },
+  {
+    "id": "review-2",
+    "movieId": "past-lives",
+    "user": {
+      "id": "user-2",
+      "name": "Marcus Reed",
+      "email": "marcus@example.com",
+      "avatar": "/avatars/default-avatar.svg"
+    },
+    "rating": 4.8,
+    "comment": "This scaffold card shows how review content, star ratings, and user identity can be organized.",
+    "date": "2026-02-26",
+    "source": "seed"
+  },
+  {
+    "id": "review-3",
+    "movieId": "spider-verse",
+    "user": {
+      "id": "user-1",
+      "name": "Elena Brooks",
+      "email": "elena@example.com",
+      "avatar": "/avatars/default-avatar.svg"
+    },
+    "rating": 5,
+    "comment": "High-energy mock feedback for testing list density and future sorting or filtering states.",
+    "date": "2026-03-01",
+    "source": "seed"
+  }
+]

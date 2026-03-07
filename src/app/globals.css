@@ -1,0 +1,29 @@
+@import "tailwindcss";
+@import "../styles/variables.css";
+@import "../styles/global.css";
+@import "../styles/layout.css";
+@import "../styles/animations.css";
+@import "../styles/components/buttons.css";
+@import "../styles/utils/spacing.css";
+@import "../styles/utils/typography.css";
+
+@theme inline {
+  --font-sans: var(--font-outfit);
+  --font-display: var(--font-sora);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-strong: var(--surface-strong);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-electric: var(--electric);
+  --color-pink-glow: var(--pink-glow);
+  --color-gold: var(--gold);
+  --shadow-card: var(--card-shadow);
+  --shadow-soft: var(--soft-shadow);
+}

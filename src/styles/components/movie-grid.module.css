@@ -1,0 +1,17 @@
+.section {
+  display: grid;
+  gap: 2rem;
+}
+
+.grid {
+  display: grid;
+  gap: 2rem;
+}
+
+.centered {
+  text-align: center;
+}
+
+.grid > * {
+  min-width: 0;
+}

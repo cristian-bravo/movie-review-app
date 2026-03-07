@@ -1,0 +1,19 @@
+[
+  {
+    "id": "user-1",
+    "name": "Elena Brooks",
+    "email": "elena@example.com",
+    "avatar": "/avatars/default-avatar.svg",
+    "bio": "Product designer and film enthusiast. Placeholder profile text for the user area.",
+    "favoriteGenres": ["Drama", "Science Fiction", "Thriller"]
+  },
+  {
+    "id": "user-2",
+    "name": "Marcus Reed",
+    "email": "marcus@example.com",
+    "avatar": "/avatars/default-avatar.svg",
+    "bio": "Editor and critic-in-progress. Placeholder profile text for account scaffolding.",
+    "favoriteGenres": ["Animation", "Romance", "Documentary"]
+  }
+]
+

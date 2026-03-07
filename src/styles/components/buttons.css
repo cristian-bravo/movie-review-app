@@ -1,0 +1,62 @@
+.stream-button {
+  display: inline-flex;
+  min-height: 2.875rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  border-radius: 1rem;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1;
+  transition:
+    transform 220ms ease,
+    box-shadow 220ms ease,
+    background-color 220ms ease,
+    border-color 220ms ease,
+    color 220ms ease,
+    filter 220ms ease;
+}
+
+.stream-button:hover,
+.stream-button:focus-visible {
+  transform: translateY(-1px);
+}
+
+.stream-button--primary {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--primary-foreground);
+  background: linear-gradient(135deg, var(--electric), var(--primary) 55%, var(--pink-glow));
+  box-shadow: 0 18px 38px -22px rgba(124, 58, 237, 0.8);
+}
+
+.stream-button--primary:hover,
+.stream-button--primary:focus-visible {
+  filter: brightness(1.08);
+  box-shadow: 0 22px 42px -18px rgba(124, 58, 237, 0.76);
+}
+
+.stream-button--secondary {
+  border: 1px solid var(--border);
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--surface-strong) 82%, transparent);
+  backdrop-filter: blur(18px);
+}
+
+.stream-button--secondary:hover,
+.stream-button--secondary:focus-visible {
+  border-color: color-mix(in srgb, var(--primary) 40%, var(--border));
+  background: color-mix(in srgb, var(--surface-strong) 92%, transparent);
+}
+
+.stream-button--ghost {
+  border: 1px solid transparent;
+  color: var(--foreground);
+  background: transparent;
+}
+
+.stream-button--ghost:hover,
+.stream-button--ghost:focus-visible {
+  border-color: var(--border);
+  background: color-mix(in srgb, var(--surface) 78%, transparent);
+}

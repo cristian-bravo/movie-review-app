@@ -1,0 +1,17 @@
+.section-spacing {
+  padding-block: clamp(4.5rem, 7vw, 7.5rem);
+}
+
+.section-spacing-tight {
+  padding-block: clamp(3rem, 5vw, 4.5rem);
+}
+
+.stack-gap {
+  display: grid;
+  gap: clamp(2rem, 3vw, 3rem);
+}
+
+.stack-gap-lg {
+  display: grid;
+  gap: clamp(2.75rem, 4vw, 4rem);
+}

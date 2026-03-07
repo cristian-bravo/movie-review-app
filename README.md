@@ -1,165 +1,164 @@
-<div align="center">
+# Movie Review App
 
-# 🎬 Movie Review App
+Movie Review App is a cinematic movie discovery application built with Next.js App Router, React, TypeScript, and Tailwind CSS.
 
-### Aplicación web moderna para buscar, explorar y reseñar películas
+The project started as a scaffold and now includes a functional OMDb-backed movie flow, a redesigned frontend, local review persistence, mock local authentication, and persistent dark/light mode.
 
-![NextJS](https://img.shields.io/badge/Next.js-Framework-black?style=for-the-badge&logo=next.js)
-![TypeScript](https://img.shields.io/badge/TypeScript-Lenguaje-blue?style=for-the-badge&logo=typescript)
-![Tailwind](https://img.shields.io/badge/TailwindCSS-Estilos-38BDF8?style=for-the-badge&logo=tailwindcss)
-![React](https://img.shields.io/badge/React-Library-61DAFB?style=for-the-badge&logo=react)
-![Status](https://img.shields.io/badge/Estado-En%20desarrollo-orange?style=for-the-badge)
+## Current Product State
 
----
+The application currently supports:
 
-Aplicación web que permite a los usuarios **buscar películas, explorar información detallada y escribir reseñas**.  
-El proyecto utiliza tecnologías modernas enfocadas en **rendimiento, escalabilidad y una interfaz limpia**.
+- catalog discovery in `/catalog` using real OMDb search results merged into one deduplicated wall
+- refactored streaming-style home feed with a featured movie hero and horizontal browse rows
+- refactored movie tiles, search surfaces, and theme toggle
+- OMDb-backed movie search in `/search`
+- richer movie details in `/movies/[movieId]`
+- OMDb-backed featured movie retrieval for home and catalog surfaces
+- local review creation with profile-linked authors when a session exists
+- local auth flow for login, register, logout, and profile
+- persistent theme switching with pre-hydration theme application
+- responsive cinematic UI across home, search, movie details, auth, and profile
 
-</div>
+## Provider Decision
 
----
+The live movie provider is now OMDb.
 
-# 📌 Descripción del Proyecto
+Reason:
 
-Esta aplicación fue desarrollada como una **plataforma web de búsqueda y reseñas de películas**.
+- the official IMDb developer access is paid and operationally heavier for this project
+- OMDb was approved for use and is more practical for day-to-day development and deployment
+- the service boundary keeps the provider replaceable in the future if IMDb access becomes worthwhile later
 
-Los usuarios pueden:
+## Recent Updates
 
-- Buscar películas por título
-- Ver información detallada de cada película
-- Publicar reseñas y calificaciones
-- Leer opiniones de otros usuarios
+Most recent architectural and frontend changes:
 
-El sistema está construido con **Next.js, TypeScript y TailwindCSS**, aplicando buenas prácticas de desarrollo frontend y diseño responsivo.
+- added a dedicated `/catalog` discovery route backed by a service-level query aggregator
+- connected the catalog directly to OMDb search queries for Batman, Avengers, Star, Dune, and Interstellar
+- replaced the old home landing composition with a streaming-style hero plus horizontal title rows
+- rebuilt the hero, poster cards, search bar, grid, and theme toggle around a modular streaming-style CSS architecture
+- introduced dedicated style modules under `src/styles` instead of growing a single global CSS file
+- switched the live provider from IMDb to OMDb
+- removed AWS Data Exchange integration and related dependency weight
+- adapted all movie endpoints and route messages to the OMDb flow
+- preserved the redesigned frontend and current visual hierarchy
+- kept documentation aligned with the actual implementation state
 
----
+## Tech Stack
 
-# ✨ Funcionalidades
+- Next.js App Router
+- React 19
+- TypeScript
+- Tailwind CSS
+- OMDb API
 
-## 🔎 Búsqueda de Películas
-- Campo de búsqueda para encontrar películas por título
-- Visualización de resultados con:
-  - Imagen de la película
-  - Título
-  - Breve descripción
+## Environment Variables
 
-## 🎥 Detalles de la Película
-- Página individual por película
-- Información detallada como:
-  - Sinopsis
-  - Reparto
-  - Calificaciones
-  - Datos adicionales
-
-## ✍️ Sistema de Reseñas
-- Los usuarios registrados pueden escribir reseñas
-- Sistema de calificación de películas
-- Visualización de reseñas de otros usuarios
-
-## 👤 Autenticación de Usuarios
-- Registro de nuevos usuarios
-- Inicio de sesión
-- Perfil de usuario con historial de reseñas
-
-## 📱 Diseño Responsivo
-La interfaz se adapta completamente a:
-
-- Computadoras de escritorio
-- Tablets
-- Dispositivos móviles
-
----
-
-# 🛠 Tecnologías Utilizadas
-
-| Tecnología | Descripción |
-|-----------|-------------|
-| **Next.js** | Framework para aplicaciones React |
-| **React** | Construcción de la interfaz de usuario |
-| **TypeScript** | Tipado estático y mayor mantenibilidad |
-| **TailwindCSS** | Estilizado moderno y responsivo |
-| **IMDb API** | Obtención de información de películas |
-| **Firebase / MongoDB (opcional)** | Almacenamiento de usuarios y reseñas |
-| **Sistema de Autenticación** | Gestión de usuarios |
-
----
-
-## 🧱 Estructura del Proyecto
-
-```text
-src/
-├── app/
-│   ├── movies/
-│   ├── search/
-│   └── profile/
-│
-├── components/
-│   ├── MovieCard.tsx
-│   ├── SearchBar.tsx
-│   ├── ReviewForm.tsx
-│   └── Navbar.tsx
-│
-├── services/
-│   └── movieApi.ts
-│
-├── hooks/
-│
-├── types/
-│
-└── utils/
-```
-
----
-
-# ⚙️ Instalación del Proyecto
-
-Clonar el repositorio:
+Create `.env.local` from `.env.example`:
 
 ```bash
-git clone https://github.com/tuusuario/movie-review-app.git
+OMDB_API_KEY=8040347c
+OMDB_BASE_URL=https://www.omdbapi.com/
+```
 
-Entrar al proyecto:
+How they work:
 
-cd movie-review-app
+- `OMDB_API_KEY` authenticates requests to the OMDb search and detail endpoints
+- `OMDB_BASE_URL` defines the base endpoint used by the service layer
 
-Instalar dependencias:
+Next.js reads these values from `.env.local` at runtime. The movie UI no longer depends on local mock movie data.
 
+## Getting Started
+
+```bash
 npm install
-
-Ejecutar el servidor de desarrollo:
-
 npm run dev
+```
 
-Abrir en el navegador:
+Open `http://localhost:3000`.
 
-http://localhost:3000
-📡 Integración con API
+## Available Scripts
 
-El proyecto utiliza la API oficial de IMDb para obtener información de películas.
+```bash
+npm run dev
+npm run build
+npm run start
+npm run lint
+npm run typecheck
+```
 
-https://developer.imdb.com/
+## Demo Auth
 
-📦 Posibles Mejoras Futuras
+The local auth service seeds a demo user:
 
-Recomendaciones de películas
+```text
+email: elena@example.com
+password: demo1234
+```
 
-Sistema de likes en reseñas
+## Visual Overview
 
-Filtros avanzados de búsqueda
+Current UI surfaces worth capturing in future screenshots:
 
-Listas personalizadas de películas
+- Home page featured movie hero and horizontal streaming rows
+- Catalog page cinematic discovery wall and poster grid
+- Search page hero with summary metrics and result grid
+- Movie details hero, metadata panels, and review section
+- Login/register split authentication layout
+- Profile dashboard with review activity
 
-Integración con más APIs de cine
+## Project Structure
 
-👨‍💻 Autor
+```text
+movie-review-app/
+|- docs/
+|- public/
+|- src/
+|  |- app/
+|  |- components/
+|  |- features/
+|  |- hooks/
+|  |- lib/
+|  |- services/
+|  |- styles/
+|  |- types/
+|  `- utils/
+|- .env.example
+|- next.config.ts
+|- package.json
+`- tsconfig.json
+```
 
-Cristian Bravo
+## Notes
 
-Proyecto desarrollado como parte de una práctica académica orientada al desarrollo de aplicaciones web modernas.
+- Movie data is fetched through `src/services/omdb.service.ts`.
+- The catalog route merges OMDb search queries through `src/services/movieService.ts`.
+- `searchMovies(query)` calls `?apikey=<key>&s=<query>` and reads movies from `data.Search`.
+- Search results keep the raw OMDb fields `imdbID`, `Title`, `Year`, and `Poster` while also preserving the app's normalized movie fields.
+- Poster rendering is handled through `src/components/movies/MoviePoster.tsx`, which swaps to `/placeholder-poster.png` if the OMDb poster is missing, `N/A`, or fails in the browser.
+- The UI styling system now lives under `src/styles/` with small focused files for globals, layout, animations, utilities, and component modules.
+- The UI is cinematic in dark mode and more editorial in light mode.
+- Auth, theme, and reviews are still client-side services backed by local storage.
 
-📜 Licencia
+## Documentation
 
-Licencia de uso personal.
+- [Architecture](./docs/architecture.md)
+- [Catalog](./docs/catalog.md)
+- [CSS Architecture](./docs/css-architecture.md)
+- [Catalog UI](./docs/catalog-ui.md)
+- [Development](./docs/development.md)
+- [UI Design](./docs/ui-design.md)
+- [API Integration](./docs/api-integration.md)
+- [Components](./docs/components.md)
+- [Features](./docs/features.md)
+- [Decisions](./docs/decisions.md)
+- [Prompt History](./docs/prompts-history.md)
+- [Catalog Prompt Record](./docs/prompt-history/catalog-generation.md)
+- [Catalog API Prompt Record](./docs/prompt-history/catalog-api-connection.md)
+- [Catalog UI Prompt Record](./docs/prompt-history/catalog-ui-refactor.md)
+- [Home Streaming Layout Prompt Record](./docs/prompt-history/home-streaming-layout.md)
+- [Streaming UI Prompt Record](./docs/prompt-history/ui-streaming-refactor.md)
 
-Este proyecto fue desarrollado con fines personales y de aprendizaje.
-No se permite su redistribución o uso comercial sin autorización del autor.
+## OMDb Documentation
+
+- https://www.omdbapi.com/
