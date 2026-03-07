@@ -152,7 +152,6 @@ movie-review-app/
 - [Components](./docs/components.md)
 - [Features](./docs/features.md)
 - [Decisions](./docs/decisions.md)
-- [Catalog UI Prompt Record](./docs/prompt-history/catalog-ui-refactor.md)
 - [Home Streaming Layout Prompt Record](./docs/prompt-history/home-streaming-layout.md)
 
 
