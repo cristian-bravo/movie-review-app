@@ -152,12 +152,9 @@ movie-review-app/
 - [Components](./docs/components.md)
 - [Features](./docs/features.md)
 - [Decisions](./docs/decisions.md)
-- [Prompt History](./docs/prompts-history.md)
-- [Catalog Prompt Record](./docs/prompt-history/catalog-generation.md)
-- [Catalog API Prompt Record](./docs/prompt-history/catalog-api-connection.md)
 - [Catalog UI Prompt Record](./docs/prompt-history/catalog-ui-refactor.md)
 - [Home Streaming Layout Prompt Record](./docs/prompt-history/home-streaming-layout.md)
-- [Streaming UI Prompt Record](./docs/prompt-history/ui-streaming-refactor.md)
+
 
 ## OMDb Documentation
 
