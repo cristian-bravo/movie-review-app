@@ -1,11 +1,13 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { startTransition, useEffect, useState } from "react";
 
 import { RatingStars } from "@/components/reviews/RatingStars";
 import { StatusBanner } from "@/components/ui/StatusBanner";
 import { Surface } from "@/components/ui/Surface";
 import { useAuth } from "@/features/auth/context/AuthContext";
+import { AuthRequiredModal } from "@/features/reviews/components/AuthRequiredModal";
 import { reviewService } from "@/services/review.service";
 import type { Review } from "@/types";
 
@@ -16,11 +18,13 @@ interface ReviewFormProps {
 
 export function ReviewForm({ movieId, onCreated }: ReviewFormProps) {
   const { session } = useAuth();
+  const pathname = usePathname();
   const [username, setUsername] = useState("");
   const [comment, setComment] = useState("");
   const [rating, setRating] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   useEffect(() => {
     if (session.user?.name) {
@@ -33,8 +37,20 @@ export function ReviewForm({ movieId, onCreated }: ReviewFormProps) {
     setError(null);
     setSuccessMessage(null);
 
+    if (session.status === "loading") {
+      setError("Checking your account. Try again in a second.");
+      return;
+    }
+
+    // Reviews now require a profile so the modal can guide guests into sign-in.
+    if (session.status !== "authenticated" || !session.user) {
+      setError("Sign in to publish your review and keep it on your profile.");
+      setIsAuthModalOpen(true);
+      return;
+    }
+
     if (!username.trim()) {
-      setError("Add a username before posting a review.");
+      setError("Your profile needs a display name before publishing.");
       return;
     }
 
@@ -67,12 +83,13 @@ export function ReviewForm({ movieId, onCreated }: ReviewFormProps) {
       onCreated(createdReview);
       setComment("");
       setRating(0);
-      setSuccessMessage("Review saved locally.");
+      setSuccessMessage("Your review is live.");
     });
   }
 
   return (
-    <Surface className="space-y-6 p-5 lg:p-6">
+    <>
+      <Surface className="space-y-6 p-5 lg:p-6">
       <div className="space-y-3">
         <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">
           Write a review
@@ -81,24 +98,23 @@ export function ReviewForm({ movieId, onCreated }: ReviewFormProps) {
           Add your own take
         </h3>
         <p className="text-sm leading-7 text-muted-foreground">
-          Reviews are still stored in local storage in this version, but the component contract is
-          already shaped for a future backend migration.
+          Rate the movie, share your take, and add your voice to the conversation.
         </p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
         <div className="rounded-[1.4rem] border border-white/8 bg-surface-strong px-4 py-4">
           <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-            Storage
+            Publishing
           </p>
-          <p className="mt-2 text-sm font-semibold text-foreground">Local first</p>
+          <p className="mt-2 text-sm font-semibold text-foreground">Ready in seconds</p>
         </div>
         <div className="rounded-[1.4rem] border border-white/8 bg-surface-strong px-4 py-4">
           <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-            Auth
+            Profile
           </p>
           <p className="mt-2 text-sm font-semibold text-foreground">
-            {session.user ? "Linked to your profile" : "Guest review"}
+            {session.user ? "Linked to your profile" : "Sign in required"}
           </p>
         </div>
         <div className="rounded-[1.4rem] border border-white/8 bg-surface-strong px-4 py-4">
@@ -115,13 +131,14 @@ export function ReviewForm({ movieId, onCreated }: ReviewFormProps) {
       <form className="space-y-5" onSubmit={handleSubmit}>
         <div className="space-y-2">
           <label className="text-sm font-medium text-foreground" htmlFor="review-username">
-            Username
+            Profile name
           </label>
           <input
             id="review-username"
             value={username}
-            onChange={(event) => setUsername(event.target.value)}
-            disabled={session.status === "authenticated"}
+            readOnly
+            disabled
+            placeholder={session.user ? undefined : "Available after you sign in"}
             className="min-h-13 w-full rounded-[1.4rem] border border-white/10 bg-surface-strong px-4 text-sm text-foreground outline-none focus:border-primary/40 disabled:cursor-not-allowed disabled:opacity-75"
           />
         </div>
@@ -156,11 +173,23 @@ export function ReviewForm({ movieId, onCreated }: ReviewFormProps) {
 
         <button
           type="submit"
-          className="min-h-12 rounded-full bg-gradient-to-r from-electric via-primary to-pink-glow px-5 text-sm font-semibold text-primary-foreground transition hover:-translate-y-0.5 hover:brightness-110"
+          disabled={session.status === "loading"}
+          className="min-h-12 rounded-full bg-gradient-to-r from-electric via-primary to-pink-glow px-5 text-sm font-semibold text-primary-foreground transition hover:-translate-y-0.5 hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0 disabled:hover:brightness-100"
         >
-          Publish review
+          {session.status === "loading" ? "Checking account..." : "Publish review"}
         </button>
       </form>
-    </Surface>
+      </Surface>
+
+      <AuthRequiredModal
+        open={isAuthModalOpen}
+        nextPath={pathname}
+        onOpenChange={setIsAuthModalOpen}
+        onAuthenticated={() => {
+          setError(null);
+          setSuccessMessage("You are signed in. Publish when you are ready.");
+        }}
+      />
+    </>
   );
 }

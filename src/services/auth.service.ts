@@ -1,81 +1,44 @@
-import { mockUsers } from "@/lib/mockUsers";
 import { storageKeys } from "@/lib/constants/storage";
 import type { AuthCredentials, AuthResult, Session, User } from "@/types";
 import { isBrowser } from "@/utils/isBrowser";
 
-interface StoredUser extends User {
-  password: string;
+interface AuthApiResponse {
+  error?: string | null;
+  status?: Session["status"];
+  user?: User | null;
 }
 
-interface StoredSession {
-  userId: string;
+interface AuthSessionMarker {
+  updatedAt: string;
 }
 
-function sanitizeUser(user: StoredUser): User {
-  const { password, ...safeUser } = user;
-  void password;
-
-  return safeUser;
-}
-
-function createDefaultUsers(): StoredUser[] {
-  return mockUsers.map((user, index) => ({
-    ...user,
-    password: index === 0 ? "demo1234" : "password123",
-    createdAt: user.createdAt ?? new Date().toISOString(),
-  }));
-}
-
-function readUsers(): StoredUser[] {
-  if (!isBrowser()) {
-    return [];
-  }
-
-  const rawUsers = window.localStorage.getItem(storageKeys.authUsers);
-
-  if (!rawUsers) {
-    const seededUsers = createDefaultUsers();
-    window.localStorage.setItem(storageKeys.authUsers, JSON.stringify(seededUsers));
-    return seededUsers;
-  }
-
+async function readJsonSafely<T>(response: Response) {
   try {
-    return JSON.parse(rawUsers) as StoredUser[];
+    return (await response.json()) as T;
   } catch {
-    const seededUsers = createDefaultUsers();
-    window.localStorage.setItem(storageKeys.authUsers, JSON.stringify(seededUsers));
-    return seededUsers;
+    return null;
   }
 }
 
-function writeUsers(users: StoredUser[]) {
+function notifyAuthChanged() {
   if (!isBrowser()) {
     return;
   }
 
-  window.localStorage.setItem(storageKeys.authUsers, JSON.stringify(users));
-}
-
-function readSessionRecord(): StoredSession | null {
-  if (!isBrowser()) {
-    return null;
-  }
-
-  const rawSession = window.localStorage.getItem(storageKeys.authSession);
-
-  if (!rawSession) {
-    return null;
-  }
-
   try {
-    return JSON.parse(rawSession) as StoredSession;
+    window.localStorage.setItem(
+      storageKeys.authSession,
+      JSON.stringify({ updatedAt: new Date().toISOString() } satisfies AuthSessionMarker),
+    );
   } catch {
-    return null;
+    // Swallow sync-marker failures. Auth still relies on server cookies.
   }
+
+  window.dispatchEvent(new Event("auth:changed"));
 }
 
 class AuthService {
-  getSession(): Session {
+  async getSession(): Promise<Session> {
     if (!isBrowser()) {
       return {
         status: "loading",
@@ -83,90 +46,104 @@ class AuthService {
       };
     }
 
-    const users = readUsers();
-    const sessionRecord = readSessionRecord();
-    const matchedUser = users.find((user) => user.id === sessionRecord?.userId);
+    try {
+      const response = await fetch("/api/auth/session", {
+        cache: "no-store",
+        headers: {
+          Accept: "application/json",
+        },
+      });
+      const data = await readJsonSafely<AuthApiResponse>(response);
 
-    if (!matchedUser) {
+      if (!response.ok || data?.status !== "authenticated" || !data.user) {
+        return {
+          status: "guest",
+          user: null,
+        };
+      }
+
+      return {
+        status: "authenticated",
+        user: data.user,
+      };
+    } catch {
       return {
         status: "guest",
         user: null,
       };
     }
-
-    return {
-      status: "authenticated",
-      user: sanitizeUser(matchedUser),
-    };
   }
 
-  login(credentials: AuthCredentials): AuthResult {
-    const users = readUsers();
-    const matchedUser = users.find(
-      (user) =>
-        user.email.toLowerCase() === credentials.email.trim().toLowerCase() &&
-        user.password === credentials.password,
-    );
-
-    if (!matchedUser) {
-      return {
-        user: null,
-        error: "Invalid email or password.",
-      };
-    }
-
-    window.localStorage.setItem(
-      storageKeys.authSession,
-      JSON.stringify({ userId: matchedUser.id } satisfies StoredSession),
-    );
-
-    return {
-      user: sanitizeUser(matchedUser),
-      error: null,
-    };
-  }
-
-  register(credentials: AuthCredentials): AuthResult {
-    const users = readUsers();
-    const normalizedEmail = credentials.email.trim().toLowerCase();
-
-    if (users.some((user) => user.email.toLowerCase() === normalizedEmail)) {
-      return {
-        user: null,
-        error: "An account with this email already exists.",
-      };
-    }
-
-    const newUser: StoredUser = {
-      id: globalThis.crypto?.randomUUID?.() ?? `user-${Date.now()}`,
-      name: credentials.name?.trim() || "Movie fan",
-      email: normalizedEmail,
+  async login(credentials: AuthCredentials): Promise<AuthResult> {
+    return this.authenticate("/api/auth/login", {
+      email: credentials.email,
       password: credentials.password,
-      avatar: "/avatars/default-avatar.svg",
-      bio: "New reviewer profile created in local storage.",
-      favoriteGenres: [],
-      createdAt: new Date().toISOString(),
-    };
-
-    const nextUsers = [...users, newUser];
-    writeUsers(nextUsers);
-    window.localStorage.setItem(
-      storageKeys.authSession,
-      JSON.stringify({ userId: newUser.id } satisfies StoredSession),
-    );
-
-    return {
-      user: sanitizeUser(newUser),
-      error: null,
-    };
+    });
   }
 
-  logout() {
+  async register(credentials: AuthCredentials): Promise<AuthResult> {
+    return this.authenticate("/api/auth/register", {
+      name: credentials.name,
+      email: credentials.email,
+      password: credentials.password,
+    });
+  }
+
+  async logout() {
     if (!isBrowser()) {
       return;
     }
 
-    window.localStorage.removeItem(storageKeys.authSession);
+    try {
+      await fetch("/api/auth/logout", {
+        method: "POST",
+      });
+    } finally {
+      notifyAuthChanged();
+    }
+  }
+
+  private async authenticate(
+    endpoint: string,
+    credentials: AuthCredentials,
+  ): Promise<AuthResult> {
+    if (!isBrowser()) {
+      return {
+        user: null,
+        error: "Please open this page in your browser to continue.",
+      };
+    }
+
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(credentials),
+      });
+      const data = await readJsonSafely<AuthApiResponse>(response);
+
+      if (!response.ok || !data?.user) {
+        return {
+          user: null,
+          error: data?.error ?? "We could not complete your request right now.",
+        };
+      }
+
+      notifyAuthChanged();
+
+      return {
+        user: data.user,
+        error: null,
+      };
+    } catch {
+      return {
+        user: null,
+        error: "We could not connect right now. Please try again in a moment.",
+      };
+    }
   }
 }
 

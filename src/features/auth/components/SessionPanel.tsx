@@ -17,7 +17,7 @@ export function SessionPanel() {
             Session Debug
           </p>
           <h1 className="font-display text-3xl font-semibold tracking-tight text-foreground">
-            Current client-side state
+            Current server-backed state
           </h1>
         </div>
         <Badge>{session.status}</Badge>
@@ -50,4 +50,3 @@ export function SessionPanel() {
     </Surface>
   );
 }
-

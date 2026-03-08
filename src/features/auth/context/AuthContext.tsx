@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  createContext,
-  startTransition,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { createContext, startTransition, useCallback, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 
 import { authService } from "@/services/auth.service";
@@ -22,58 +15,63 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-function getCurrentSession(): Session {
-  return authService.getSession();
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session>({
     status: "loading",
     user: null,
   });
 
-  useEffect(() => {
-    setSession(getCurrentSession());
+  const refreshSession = useCallback(async () => {
+    const nextSession = await authService.getSession();
 
-    function handleStorage() {
-      setSession(getCurrentSession());
-    }
-
-    window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
+    startTransition(() => {
+      setSession(nextSession);
+    });
   }, []);
 
-  const value = useMemo<AuthContextValue>(
-    () => ({
-      session,
-      login: async (credentials) => {
-        const result = authService.login(credentials);
+  useEffect(() => {
+    void refreshSession();
 
-        startTransition(() => {
-          setSession(getCurrentSession());
-        });
+    function handleAuthChange() {
+      void refreshSession();
+    }
 
-        return result;
-      },
-      register: async (credentials) => {
-        const result = authService.register(credentials);
+    window.addEventListener("storage", handleAuthChange);
+    window.addEventListener("auth:changed", handleAuthChange);
 
-        startTransition(() => {
-          setSession(getCurrentSession());
-        });
+    return () => {
+      window.removeEventListener("storage", handleAuthChange);
+      window.removeEventListener("auth:changed", handleAuthChange);
+    };
+  }, [refreshSession]);
 
-        return result;
-      },
-      logout: () => {
-        authService.logout();
+  const value: AuthContextValue = {
+    session,
+    login: async (credentials) => {
+      const result = await authService.login(credentials);
 
-        startTransition(() => {
-          setSession(getCurrentSession());
-        });
-      },
-    }),
-    [session],
-  );
+      if (!result.error) {
+        await refreshSession();
+      }
+
+      return result;
+    },
+    register: async (credentials) => {
+      const result = await authService.register(credentials);
+
+      if (!result.error) {
+        await refreshSession();
+      }
+
+      return result;
+    },
+    logout: () => {
+      void (async () => {
+        await authService.logout();
+        await refreshSession();
+      })();
+    },
+  };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

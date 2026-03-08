@@ -54,7 +54,7 @@ export function ProfileDashboard() {
   const statItems = [
     { label: "Email", value: session.user.email },
     { label: "Reviews", value: String(reviews.length) },
-    { label: "Created", value: session.user.createdAt ? session.user.createdAt.slice(0, 10) : "Local user" },
+    { label: "Created", value: session.user.createdAt ? session.user.createdAt.slice(0, 10) : "Mongo user" },
   ];
   const genres = session.user.favoriteGenres?.length
     ? session.user.favoriteGenres
@@ -73,7 +73,7 @@ export function ProfileDashboard() {
               eyebrow="Profile"
               title={session.user.name}
               description={
-                session.user.bio ?? "Local account profile stored in browser storage."
+                session.user.bio ?? "Profile loaded from MongoDB through the auth API."
               }
             />
 
@@ -125,8 +125,8 @@ export function ProfileDashboard() {
                 Session
               </p>
               <p className="mt-3 text-sm leading-7 text-muted-foreground">
-                Auth is still local-first. The surrounding components already isolate this state so
-                a future provider can replace it with limited surface changes.
+                Auth now runs through MongoDB-backed API routes. Reviews are still stored locally in
+                the browser for this version.
               </p>
             </div>
           </div>
@@ -137,7 +137,7 @@ export function ProfileDashboard() {
         <SectionHeading
           eyebrow="My Reviews"
           title="Recent activity"
-          description="All reviews written through the local review form are surfaced here."
+          description="Reviews written through the current local review form are surfaced here."
         />
         <ReviewList reviews={reviews} />
       </section>
