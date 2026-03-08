@@ -7,7 +7,7 @@
 - `Navbar`
   Sticky global navigation with active route feedback, auth-aware actions, and theme switching.
 - `Footer`
-  Product footer with exploration links and developer notes.
+  Product-oriented footer with brand copy, exploration links, community links, support links, and social actions.
 - `HeroMovie`
   Home-page featured title composition with dominant poster, metadata pills, and browse actions.
 
@@ -45,7 +45,7 @@
 - `MovieSpotlight`
   Featured editorial row used on the catalog route.
 - `MovieHero`
-  Full movie-detail hero with poster, backdrop, stat cards, and metadata chips.
+  Full movie-detail hero with poster, hero background, stat cards, and metadata chips.
 
 ## Review Components
 
@@ -56,7 +56,9 @@
 - `ReviewList`
   Review collection wrapper with empty-state handling.
 - `ReviewForm`
-  Local-first review submission form.
+  Local-first review submission form that routes guests into the auth-required modal before publishing.
+- `AuthRequiredModal`
+  Cinematic sign-in modal used when protected review actions are triggered without a session.
 - `ReviewFeed`
   Review list presentation used for landing-page and section-level community previews.
 - `ReviewsSection`
@@ -65,11 +67,15 @@
 ## Auth Components
 
 - `AuthForm`
-  Shared login/register experience with split layout and variant-specific messaging.
+  Shared login/register experience with split layout, variant-specific messaging, and a CSS aurora background on `/login`.
+- `AuthCard`
+  Glass auth shell used by login and register to keep the form contained and visually consistent.
+- `FeatureCard`
+  Compact auth-side marketing card used inside the split auth hero.
 - `ProfileDashboard`
   Authenticated profile surface with summary cards and review history.
 - `SessionPanel`
-  Session and theme debug surface for development.
+  Session summary surface for development and profile context.
 
 ## CSS Modules
 

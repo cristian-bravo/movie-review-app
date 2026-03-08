@@ -60,7 +60,8 @@ Behavior:
 - reviews are stored in local storage
 - seeded reviews keep the interface populated for known mock titles
 - local reviews merge into the same presentation flow
-- authenticated users publish reviews under their local profile identity
+- authenticated users publish reviews under their profile identity
+- guests trying to publish are asked to sign in first
 
 ## Authentication
 
@@ -69,14 +70,20 @@ Routes:
 - `/login`
 - `/register`
 - `/profile`
-- `/auth/session`
+- `/api/auth/login`
+- `/api/auth/register`
+- `/api/auth/logout`
+- `/api/auth/session`
 
 Behavior:
 
-- local auth service seeds a demo account
-- register creates a local user record and session
-- login restores a local session
-- profile reads local auth state and local review history
+- `/login` and `/register` share a split-layout auth experience with variant-specific messaging
+- `/login` adds a CSS aurora background while preserving the same auth card logic
+- register creates a MongoDB user record and session
+- login restores a MongoDB-backed session
+- auth state is exposed to the UI through `/api/auth/session`
+- session persistence uses an `httpOnly` cookie
+- profile reads authenticated user data plus local review history
 
 ## Theme Switching
 
