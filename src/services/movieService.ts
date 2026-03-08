@@ -73,7 +73,7 @@ class MovieService {
     const fetchLimit = Math.max(rowLimit, HOME_ROW_FETCH_LIMIT);
 
     const [heroCandidates, rowResponses] = await Promise.all([
-      omdbService.getFeaturedMovies(1),
+      omdbService.getFeaturedMovies(5),
       Promise.all(
         HOME_ROW_CONFIG.map((row) => collectMoviesByQuery(row.query, fetchLimit)),
       ),
@@ -85,12 +85,15 @@ class MovieService {
       // loaded so the right arrow can reveal additional titles after the initial viewport.
       movies: dedupeMovies(rowResponses[index]?.items ?? []).slice(0, fetchLimit),
     }));
-    const heroMovie =
-      heroCandidates[0] ?? rows.flatMap((row) => row.movies)[0] ?? null;
+    const fallbackHeroMovies = dedupeMovies(rows.flatMap((row) => row.movies)).slice(0, 5);
+    const heroMovies = dedupeMovies(heroCandidates).slice(0, 5);
+    const resolvedHeroMovies = heroMovies.length > 0 ? heroMovies : fallbackHeroMovies;
+    const heroMovie = resolvedHeroMovies[0] ?? null;
     const error = rowResponses.find((response) => response.error)?.error ?? null;
 
     return {
       heroMovie,
+      heroMovies: resolvedHeroMovies,
       rows,
       error,
     };

@@ -1,5 +1,5 @@
 export const siteConfig = {
-  name: "Movie Review App",
+  name: "ReelReview",
   description:
     "Cinematic movie discovery platform with OMDb-backed search, local reviews, and modular authentication built on Next.js.",
   url: "http://localhost:3000",

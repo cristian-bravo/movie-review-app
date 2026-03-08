@@ -61,6 +61,7 @@ export interface MovieHomeRow {
 
 export interface MovieHomeResult {
   heroMovie: Movie | null;
+  heroMovies: Movie[];
   rows: MovieHomeRow[];
   error: string | null;
 }

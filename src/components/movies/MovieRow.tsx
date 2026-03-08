@@ -1,7 +1,7 @@
 "use client";
 
-import { animate, stagger } from "animejs";
-import { useEffect, useRef, useState } from "react";
+import { animate } from "animejs";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import { MovieCard } from "@/components/movies/MovieCard";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -38,8 +38,15 @@ export function MovieRow({
   const [visibleCount, setVisibleCount] = useState(5);
   const [startIndex, setStartIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
-  const [direction, setDirection] = useState<"left" | "right">("right");
-  const itemRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const [transition, setTransition] = useState<{
+    direction: "left" | "right";
+    fromStartIndex: number;
+    toStartIndex: number;
+  } | null>(null);
+  const trackWindowRef = useRef<HTMLDivElement | null>(null);
+  const rowRef = useRef<HTMLDivElement | null>(null);
+  const animationRef = useRef<{ cancel: () => void } | null>(null);
+  const metricsRef = useRef({ itemWidth: 0, gap: 0 });
 
   useEffect(() => {
     const updateVisibleCount = () => {
@@ -70,23 +77,6 @@ export function MovieRow({
   }, []);
 
   useEffect(() => {
-    const targets = itemRefs.current.filter((item): item is HTMLDivElement => Boolean(item));
-
-    if (targets.length === 0) {
-      return;
-    }
-
-    animate(targets, {
-      opacity: [{ from: 0 }, { to: 1 }],
-      translateX: [{ from: direction === "right" ? 28 : -28 }, { to: 0 }],
-      scale: [{ from: 0.96 }, { to: 1 }],
-      easing: "easeOutExpo",
-      duration: 420,
-      delay: stagger(95, { start: 0 }),
-    });
-  }, [direction, startIndex, visibleCount]);
-
-  useEffect(() => {
     const maxStartIndex = Math.max(0, movies.length - visibleCount);
 
     if (startIndex > maxStartIndex) {
@@ -94,44 +84,116 @@ export function MovieRow({
     }
   }, [movies.length, startIndex, visibleCount]);
 
+  useLayoutEffect(() => {
+    const row = rowRef.current;
+    const trackWindow = trackWindowRef.current;
+    const firstItem = row?.querySelector<HTMLElement>("[data-row-item='true']");
+
+    if (!row || !trackWindow || !firstItem) {
+      return;
+    }
+
+    const rowStyles = window.getComputedStyle(row);
+    const gap = parseFloat(rowStyles.gap || "0");
+    const itemWidth = firstItem.getBoundingClientRect().width;
+    const visibleWidth = itemWidth * visibleCount + gap * Math.max(visibleCount - 1, 0);
+
+    metricsRef.current = { itemWidth, gap };
+    trackWindow.style.width = `${visibleWidth}px`;
+    trackWindow.style.maxWidth = "100%";
+
+    animationRef.current?.cancel();
+
+    if (!transition) {
+      row.style.transform = "translate3d(0, 0, 0)";
+      return;
+    }
+
+    const shift = itemWidth + gap;
+    row.style.transform =
+      transition.direction === "right"
+        ? "translate3d(0, 0, 0)"
+        : `translate3d(${-shift}px, 0, 0)`;
+
+    requestAnimationFrame(() => {
+      animationRef.current = animate(row, {
+        translateX: transition.direction === "right" ? -shift : 0,
+        duration: 640,
+        easing: "inOutSine",
+        onComplete: () => {
+          row.style.transform = "translate3d(0, 0, 0)";
+          setStartIndex(transition.toStartIndex);
+          setTransition(null);
+          setIsAnimating(false);
+        },
+      });
+    });
+
+    return () => {
+      animationRef.current?.cancel();
+    };
+  }, [transition, visibleCount]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const row = rowRef.current;
+      const trackWindow = trackWindowRef.current;
+      const firstItem = row?.querySelector<HTMLElement>("[data-row-item='true']");
+
+      if (!row || !trackWindow || !firstItem) {
+        return;
+      }
+
+      const rowStyles = window.getComputedStyle(row);
+      const gap = parseFloat(rowStyles.gap || "0");
+      const itemWidth = firstItem.getBoundingClientRect().width;
+      const visibleWidth = itemWidth * visibleCount + gap * Math.max(visibleCount - 1, 0);
+
+      metricsRef.current = { itemWidth, gap };
+      trackWindow.style.width = `${visibleWidth}px`;
+      trackWindow.style.maxWidth = "100%";
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize, { passive: true });
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [visibleCount, movies.length]);
+
   function handleArrowClick(direction: "left" | "right") {
-    const step = visibleCount;
+    const step = 1;
     const maxStartIndex = Math.max(0, movies.length - visibleCount);
     const nextStartIndex =
       direction === "left"
         ? Math.max(0, startIndex - step)
         : Math.min(maxStartIndex, startIndex + step);
 
-    if (isAnimating || nextStartIndex === startIndex) {
+    if (nextStartIndex === startIndex || isAnimating || transition) {
       return;
     }
 
-    setDirection(direction);
     setIsAnimating(true);
-
-    const targets = itemRefs.current.filter((item): item is HTMLDivElement => Boolean(item));
-
-    animate(targets, {
-      opacity: [{ from: 1 }, { to: 0 }],
-      translateX: [{ from: 0 }, { to: direction === "right" ? -22 : 22 }],
-      scale: [{ from: 1 }, { to: 0.985 }],
-      easing: "easeInOutQuad",
-      duration: 180,
-      delay: stagger(55, { start: 0 }),
-      onComplete: () => {
-        setStartIndex(nextStartIndex);
-        setIsAnimating(false);
-      },
+    setTransition({
+      direction,
+      fromStartIndex: startIndex,
+      toStartIndex: nextStartIndex,
     });
   }
 
-  const visibleMovies = movies.slice(startIndex, startIndex + visibleCount);
-  const canScrollLeft = startIndex > 0 && !isAnimating;
-  const canScrollRight = startIndex + visibleCount < movies.length && !isAnimating;
-  itemRefs.current = [];
+  const renderStartIndex = transition
+    ? transition.direction === "right"
+      ? transition.fromStartIndex
+      : transition.toStartIndex
+    : startIndex;
+  const renderCount = transition ? visibleCount + 1 : visibleCount;
+  const visibleMovies = movies.slice(renderStartIndex, renderStartIndex + renderCount);
+  const canScrollLeft = startIndex > 0 && !isAnimating && !transition;
+  const canScrollRight = startIndex + visibleCount < movies.length && !isAnimating && !transition;
 
   return (
-    <section className="py-6 sm:py-7 xl:py-8">
+    <section className={styles.section}>
       <div className={styles.header}>
         <h2 className={styles.title}>{title}</h2>
       </div>
@@ -152,29 +214,29 @@ export function MovieRow({
             <ChevronLeftIcon />
           </button>
 
-          <div
-            className={cn(
-              styles.row,
-              "animate-row-stagger flex gap-6 py-4",
-            )}
-            role="list"
-          >
-            {/* Render only the active window so the row never exposes all fetched titles at once. */}
-            {visibleMovies.map((movie, index) => (
-              <div
-                key={movie.imdbID}
-                ref={(element) => {
-                  itemRefs.current[index] = element;
-                }}
-                className={cn(
-                  styles.item,
-                  "w-[156px] flex-shrink-0 sm:w-[176px] lg:w-[198px] xl:w-[212px] 2xl:w-[224px]",
-                )}
-                role="listitem"
-              >
-                <MovieCard movie={movie} variant="row" />
-              </div>
-            ))}
+          <div ref={trackWindowRef} className={styles.trackWindow}>
+            <div
+              ref={rowRef}
+              className={cn(
+                styles.row,
+                "flex gap-6 py-4",
+              )}
+              role="list"
+            >
+              {visibleMovies.map((movie) => (
+                <div
+                  key={movie.imdbID}
+                  data-row-item="true"
+                  className={cn(
+                    styles.item,
+                    "w-[156px] flex-shrink-0 sm:w-[176px] lg:w-[198px] xl:w-[212px] 2xl:w-[224px]",
+                  )}
+                  role="listitem"
+                >
+                  <MovieCard movie={movie} variant="row" />
+                </div>
+              ))}
+            </div>
           </div>
 
           <button

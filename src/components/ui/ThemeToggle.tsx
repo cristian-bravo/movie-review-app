@@ -36,7 +36,6 @@ export function ThemeToggle() {
       <span className={styles.track}>
         <span className={styles.thumb}>{isDark ? <SunIcon /> : <MoonIcon />}</span>
       </span>
-      <span className={styles.label}>{isDark ? "Light mode" : "Dark mode"}</span>
     </button>
   );
 }

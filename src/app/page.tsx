@@ -15,15 +15,15 @@ function getHomeStatusMessage(hasRows: boolean, hasError: boolean) {
 }
 
 export default async function HomePage() {
-  const { heroMovie, rows, error } = await movieService.getHomeMovies();
+  const { heroMovie, heroMovies, rows, error } = await movieService.getHomeMovies();
   const hasRows = rows.some((row) => row.movies.length > 0);
   const statusMessage = getHomeStatusMessage(hasRows, Boolean(error));
 
   return (
     <>
-      <HeroSection movie={heroMovie} />
+      <HeroSection movie={heroMovie} movies={heroMovies} />
 
-      <section className="relative z-20 pb-12 pt-8 sm:pb-16 sm:pt-10 lg:pb-20 lg:pt-12">
+      <section className="relative z-20 pb-12 pt-2 sm:pb-16 sm:pt-4 lg:pb-20 lg:pt-5">
         <Container variant="wide" className="grid min-w-0 gap-1 sm:gap-2">
           {statusMessage ? (
             <StatusBanner tone={hasRows ? "info" : "error"} message={statusMessage} />

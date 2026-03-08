@@ -6,6 +6,6 @@ export const primaryNavigation = [
 ];
 
 export const authNavigation = [
-  { href: "/login", label: "Login" },
-  { href: "/register", label: "Register" },
+  { href: "/login", label: "Sign In" },
+  { href: "/register", label: "Join Free" },
 ];

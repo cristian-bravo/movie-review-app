@@ -1,5 +1,17 @@
+.section {
+  width: 100%;
+  padding-block: 1.5rem;
+  border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+  border-radius: 1.75rem;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--surface) 78%, transparent), color-mix(in srgb, var(--surface) 42%, transparent)),
+    radial-gradient(circle at top left, color-mix(in srgb, var(--accent-soft) 75%, transparent), transparent 42%);
+  box-shadow: var(--soft-shadow);
+}
+
 .header {
   margin-bottom: 1.1rem;
+  padding-inline: 1.35rem;
 }
 
 .title {
@@ -12,6 +24,8 @@
 
 .viewport {
   position: relative;
+  display: flex;
+  justify-content: center;
   width: 100%;
   min-width: 0;
   overflow: visible;
@@ -39,15 +53,24 @@
 }
 
 .row {
+  display: flex;
+  width: fit-content;
   min-width: 0;
   align-items: stretch;
-  padding-inline: 2.1rem;
+  will-change: transform;
 }
 
 .item {
-  opacity: 0;
-  transform: translateX(26px) scale(0.96);
+  opacity: 1;
+  transform: translateX(0) scale(1);
   will-change: transform, opacity;
+}
+
+.trackWindow {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  margin-inline: auto;
 }
 
 .edgeArrow {
@@ -105,8 +128,14 @@
 }
 
 @media (max-width: 767px) {
+  .section {
+    padding-block: 1.2rem;
+    border-radius: 1.35rem;
+  }
+
   .header {
     margin-bottom: 0.95rem;
+    padding-inline: 1rem;
   }
 
   .edgeArrow {
@@ -115,6 +144,6 @@
   }
 
   .row {
-    padding-inline: 1.9rem;
+    gap: 1.15rem;
   }
 }

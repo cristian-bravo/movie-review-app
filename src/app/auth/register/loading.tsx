@@ -3,9 +3,11 @@ import { LoadingCard } from "@/components/ui/LoadingCard";
 
 export default function RegisterLoading() {
   return (
-    <Container className="section-spacing">
-      <LoadingCard className="mx-auto max-w-xl min-h-[32rem]" />
+    <Container variant="wide" className="section-spacing">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.02fr)_minmax(21rem,0.98fr)] xl:gap-8">
+        <LoadingCard className="order-2 min-h-[24rem] lg:order-1 lg:min-h-[42rem]" />
+        <LoadingCard className="order-1 min-h-[34rem] lg:order-2" />
+      </div>
     </Container>
   );
 }
-
