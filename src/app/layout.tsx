@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Outfit, Sora } from "next/font/google";
+import { Suspense } from "react";
 import type { ReactNode } from "react";
 
+import { Container } from "@/components/layout/Container";
 import { AppProviders } from "@/components/providers/AppProviders";
 import { ThemeScript } from "@/components/providers/ThemeScript";
 import { Footer } from "@/components/layout/Footer";
@@ -34,6 +36,16 @@ export const metadata: Metadata = {
   },
 };
 
+function NavbarFallback() {
+  return (
+    <header aria-hidden="true" className="absolute inset-x-0 top-0 z-40">
+      <Container variant="wide" className="py-4">
+        <div className="min-h-16" />
+      </Container>
+    </header>
+  );
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -46,7 +58,9 @@ export default function RootLayout({
       >
         <ThemeScript />
         <AppProviders>
-          <Navbar />
+          <Suspense fallback={<NavbarFallback />}>
+            <Navbar />
+          </Suspense>
           <main className="flex-1">{children}</main>
           <Footer />
         </AppProviders>

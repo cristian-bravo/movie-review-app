@@ -106,7 +106,7 @@ export function HeroSection({ movie, movies = [] }: HeroSectionProps) {
                   <h1 className={titleClassName}>{activeTitle}</h1>
                 </div>
                 <p className={styles.summary}>{description}</p>
-                {activeMovie?.rating !== null ? (
+                {typeof activeMovie?.rating === "number" ? (
                   <div className={styles.mobileRating}>
                     <RatingBadge rating={activeMovie.rating} />
                   </div>
@@ -182,7 +182,7 @@ export function HeroSection({ movie, movies = [] }: HeroSectionProps) {
               ) : null}
             </div>
 
-            {activeMovie?.rating !== null ? (
+            {typeof activeMovie?.rating === "number" ? (
               <div className={`${styles.ratingColumn} ${styles.desktopRating}`}>
                 <RatingBadge rating={activeMovie.rating} />
               </div>
