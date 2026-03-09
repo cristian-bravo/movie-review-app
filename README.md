@@ -12,6 +12,11 @@
   </p>
 </div>
 
+<p align="center">
+  🌐 <strong>Live Demo:</strong><br>
+  https://reelreview.vercel.app
+</p>
+
 ReelReview is a cinematic movie discovery application built with Next.js App Router, React, TypeScript, and Tailwind CSS.
 
 The project started as a scaffold and now includes a live OMDb-backed movie flow, a redesigned streaming-style frontend, MongoDB-backed authentication, local review persistence, and persistent dark/light mode.
