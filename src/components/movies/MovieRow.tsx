@@ -50,22 +50,18 @@ function getVisibleCount(width: number) {
 export function MovieRow({ title, movies }: MovieRowProps) {
   const [visibleCount, setVisibleCount] = useState(5);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isDesktop, setIsDesktop] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
   const trackWindowRef = useRef<HTMLDivElement | null>(null);
   const rowRef = useRef<HTMLDivElement | null>(null);
   const animationRef = useRef<{ cancel: () => void } | null>(null);
+  const scrollFrameRef = useRef<number | null>(null);
   const metricsRef = useRef({
     itemWidth: 0,
     gap: 0,
     step: 0,
   });
   const translateRef = useRef(0);
-  const touchStateRef = useRef({
-    startX: 0,
-    deltaX: 0,
-    active: false,
-  });
 
   const maxIndex = Math.max(0, movies.length - visibleCount);
 
@@ -86,16 +82,32 @@ export function MovieRow({ title, movies }: MovieRowProps) {
     setIsAnimating(false);
   }, []);
 
+  const syncMobileIndexFromScroll = useCallback(() => {
+    const trackWindow = trackWindowRef.current;
+    const { step } = metricsRef.current;
+
+    if (!trackWindow || step <= 0) {
+      return;
+    }
+
+    const nextIndex = Math.max(0, Math.min(maxIndex, Math.round(trackWindow.scrollLeft / step)));
+
+    setCurrentIndex((previous) => (previous === nextIndex ? previous : nextIndex));
+  }, [maxIndex]);
+
   useEffect(() => {
-    const updateVisibleCount = () => {
-      setVisibleCount(getVisibleCount(window.innerWidth));
+    const updateLayoutMode = () => {
+      const width = window.innerWidth;
+
+      setVisibleCount(getVisibleCount(width));
+      setIsDesktop(width >= 1024);
     };
 
-    updateVisibleCount();
-    window.addEventListener("resize", updateVisibleCount);
+    updateLayoutMode();
+    window.addEventListener("resize", updateLayoutMode);
 
     return () => {
-      window.removeEventListener("resize", updateVisibleCount);
+      window.removeEventListener("resize", updateLayoutMode);
     };
   }, []);
 
@@ -129,10 +141,54 @@ export function MovieRow({ title, movies }: MovieRowProps) {
     trackWindow.style.width = `${visibleWidth}px`;
     trackWindow.style.maxWidth = "100%";
 
-    if (!isAnimating && !isDragging) {
-      setRowTranslate(-currentIndex * step);
+    if (isDesktop) {
+      trackWindow.scrollLeft = 0;
+
+      if (!isAnimating) {
+        setRowTranslate(-(currentIndex * step));
+      }
+
+      return;
     }
-  }, [currentIndex, isAnimating, isDragging, setRowTranslate, visibleCount]);
+
+    if (isAnimating) {
+      cancelAnimation();
+    }
+
+    setRowTranslate(0);
+
+    const maxScrollLeft = Math.max(0, trackWindow.scrollWidth - trackWindow.clientWidth);
+    trackWindow.scrollLeft = Math.min(currentIndex * step, maxScrollLeft);
+  }, [cancelAnimation, currentIndex, isAnimating, isDesktop, setRowTranslate, visibleCount]);
+
+  useEffect(() => {
+    const trackWindow = trackWindowRef.current;
+
+    if (!trackWindow || isDesktop) {
+      return;
+    }
+
+    function handleScroll() {
+      if (scrollFrameRef.current !== null) {
+        window.cancelAnimationFrame(scrollFrameRef.current);
+      }
+
+      scrollFrameRef.current = window.requestAnimationFrame(() => {
+        syncMobileIndexFromScroll();
+        scrollFrameRef.current = null;
+      });
+    }
+
+    trackWindow.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => {
+      trackWindow.removeEventListener("scroll", handleScroll);
+
+      if (scrollFrameRef.current !== null) {
+        window.cancelAnimationFrame(scrollFrameRef.current);
+      }
+    };
+  }, [isDesktop, syncMobileIndexFromScroll]);
 
   useEffect(() => {
     return () => {
@@ -145,7 +201,7 @@ export function MovieRow({ title, movies }: MovieRowProps) {
       const clampedIndex = Math.max(0, Math.min(nextIndex, maxIndex));
       const { step } = metricsRef.current;
 
-      if (step <= 0) {
+      if (!isDesktop || step <= 0) {
         return;
       }
 
@@ -170,12 +226,12 @@ export function MovieRow({ title, movies }: MovieRowProps) {
         },
       });
     },
-    [cancelAnimation, maxIndex, setRowTranslate],
+    [cancelAnimation, isDesktop, maxIndex, setRowTranslate],
   );
 
   const navigate = useCallback(
     (direction: "left" | "right") => {
-      if (isAnimating || isDragging) {
+      if (!isDesktop || isAnimating) {
         return;
       }
 
@@ -187,71 +243,8 @@ export function MovieRow({ title, movies }: MovieRowProps) {
 
       animateToIndex(nextIndex);
     },
-    [animateToIndex, currentIndex, isAnimating, isDragging, maxIndex],
+    [animateToIndex, currentIndex, isAnimating, isDesktop, maxIndex],
   );
-
-  function handleTouchStart(event: React.TouchEvent<HTMLDivElement>) {
-    if (isAnimating) {
-      cancelAnimation();
-    }
-
-    touchStateRef.current = {
-      startX: event.touches[0]?.clientX ?? 0,
-      deltaX: 0,
-      active: true,
-    };
-    setIsDragging(true);
-  }
-
-  function handleTouchMove(event: React.TouchEvent<HTMLDivElement>) {
-    const touchState = touchStateRef.current;
-    const currentTouch = event.touches[0];
-
-    if (!touchState.active || !currentTouch) {
-      return;
-    }
-
-    const { step } = metricsRef.current;
-
-    if (step <= 0) {
-      return;
-    }
-
-    const deltaX = currentTouch.clientX - touchState.startX;
-    touchState.deltaX = deltaX;
-
-    const isEdgeResistance =
-      (currentIndex === 0 && deltaX > 0) || (currentIndex === maxIndex && deltaX < 0);
-    const resistance = isEdgeResistance ? 0.28 : 0.9;
-    const baseTranslate = -(currentIndex * step);
-
-    setRowTranslate(baseTranslate + deltaX * resistance);
-
-    if (Math.abs(deltaX) > 6) {
-      event.preventDefault();
-    }
-  }
-
-  function finishTouchGesture() {
-    const touchState = touchStateRef.current;
-    const { step } = metricsRef.current;
-    const threshold = Math.min(96, step * 0.22 || 72);
-
-    touchState.active = false;
-    setIsDragging(false);
-
-    if (touchState.deltaX <= -threshold && currentIndex < maxIndex) {
-      animateToIndex(currentIndex + 1);
-      return;
-    }
-
-    if (touchState.deltaX >= threshold && currentIndex > 0) {
-      animateToIndex(currentIndex - 1);
-      return;
-    }
-
-    animateToIndex(currentIndex);
-  }
 
   const canScrollLeft = currentIndex > 0 && !isAnimating;
   const canScrollRight = currentIndex < maxIndex && !isAnimating;
@@ -264,53 +257,54 @@ export function MovieRow({ title, movies }: MovieRowProps) {
 
       {movies.length > 0 ? (
         <div className={styles.viewport} aria-label={title}>
-          <div
-            className={cn(styles.hitZone, styles.hitZoneLeft, !canScrollLeft && styles.hitZoneDisabled)}
-            onClick={() => {
-              if (canScrollLeft) {
-                navigate("left");
-              }
-            }}
-            aria-hidden="true"
-          />
+          {isDesktop ? (
+            <>
+              <div
+                className={cn(styles.hitZone, styles.hitZoneLeft, !canScrollLeft && styles.hitZoneDisabled)}
+                onClick={() => {
+                  if (canScrollLeft) {
+                    navigate("left");
+                  }
+                }}
+                aria-hidden="true"
+              />
 
-          <div
-            className={cn(styles.hitZone, styles.hitZoneRight, !canScrollRight && styles.hitZoneDisabled)}
-            onClick={() => {
-              if (canScrollRight) {
-                navigate("right");
-              }
-            }}
-            aria-hidden="true"
-          />
+              <div
+                className={cn(styles.hitZone, styles.hitZoneRight, !canScrollRight && styles.hitZoneDisabled)}
+                onClick={() => {
+                  if (canScrollRight) {
+                    navigate("right");
+                  }
+                }}
+                aria-hidden="true"
+              />
 
-          <button
-            type="button"
-            onClick={() => navigate("left")}
-            disabled={!canScrollLeft}
-            aria-label={`Scroll ${title} left`}
-            className={cn(
-              styles.edgeArrow,
-              styles.edgeArrowLeft,
-              !canScrollLeft && styles.edgeArrowHidden,
-            )}
-          >
-            <ChevronLeftIcon />
-          </button>
+              <button
+                type="button"
+                onClick={() => navigate("left")}
+                disabled={!canScrollLeft}
+                aria-label={`Scroll ${title} left`}
+                className={cn(
+                  styles.edgeArrow,
+                  styles.edgeArrowLeft,
+                  !canScrollLeft && styles.edgeArrowHidden,
+                )}
+              >
+                <ChevronLeftIcon />
+              </button>
+            </>
+          ) : null}
 
           <div
             ref={trackWindowRef}
-            className={styles.trackWindow}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={finishTouchGesture}
-            onTouchCancel={finishTouchGesture}
+            className={cn(styles.trackWindow, !isDesktop && styles.mobileTrackWindow)}
           >
             <div
               ref={rowRef}
               className={cn(
                 styles.row,
                 "flex gap-6 py-4",
+                !isDesktop && styles.mobileRow,
               )}
               role="list"
             >
@@ -330,19 +324,21 @@ export function MovieRow({ title, movies }: MovieRowProps) {
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={() => navigate("right")}
-            disabled={!canScrollRight}
-            aria-label={`Scroll ${title} right`}
-            className={cn(
-              styles.edgeArrow,
-              styles.edgeArrowRight,
-              !canScrollRight && styles.edgeArrowHidden,
-            )}
-          >
-            <ChevronRightIcon />
-          </button>
+          {isDesktop ? (
+            <button
+              type="button"
+              onClick={() => navigate("right")}
+              disabled={!canScrollRight}
+              aria-label={`Scroll ${title} right`}
+              className={cn(
+                styles.edgeArrow,
+                styles.edgeArrowRight,
+                !canScrollRight && styles.edgeArrowHidden,
+              )}
+            >
+              <ChevronRightIcon />
+            </button>
+          ) : null}
         </div>
       ) : (
         <EmptyState

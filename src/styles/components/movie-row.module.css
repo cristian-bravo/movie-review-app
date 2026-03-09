@@ -57,8 +57,8 @@
   top: 0;
   bottom: 0;
   z-index: 6;
-  display: block;
-  width: clamp(3.15rem, 15%, 8.5rem);
+  display: none;
+  width: clamp(4.5rem, 18%, 11rem);
   cursor: pointer;
   transition: opacity 220ms ease, background 220ms ease;
 }
@@ -94,6 +94,8 @@
 .item {
   opacity: 1;
   transform: translateX(0) scale(1);
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
 }
 
 .trackWindow {
@@ -104,6 +106,27 @@
   overflow: hidden;
   margin-inline: auto;
   touch-action: pan-y;
+}
+
+.mobileTrackWindow {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pan-y;
+}
+
+.mobileTrackWindow::-webkit-scrollbar {
+  display: none;
+}
+
+.mobileRow {
+  width: max-content;
+  transform: none !important;
+  will-change: auto;
 }
 
 .edgeArrow {
@@ -162,7 +185,7 @@
 
 @media (min-width: 1024px) {
   .hitZone {
-    width: clamp(4.5rem, 18%, 11rem);
+    display: block;
   }
 }
 
@@ -184,10 +207,6 @@
   .edgeArrow {
     height: 2.35rem;
     width: 2.35rem;
-  }
-
-  .hitZone {
-    width: clamp(2.85rem, 16vw, 4.35rem);
   }
 
   .row {
