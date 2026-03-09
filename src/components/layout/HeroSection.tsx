@@ -22,7 +22,7 @@ function getHeroPills(movie: Movie) {
 
 function StarIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-6 w-6 fill-current" aria-hidden="true">
+    <svg viewBox="0 0 24 24" className={styles.ratingStar} aria-hidden="true">
       <path d="m12 3.25 2.77 5.61 6.19.9-4.48 4.37 1.06 6.17L12 17.4l-5.54 2.9 1.06-6.17L3.04 9.76l6.19-.9L12 3.25Z" />
     </svg>
   );

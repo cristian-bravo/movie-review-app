@@ -12,6 +12,7 @@ import styles from "@/styles/components/movie-card.module.css";
 interface MovieCardProps {
   movie: Movie;
   variant?: "default" | "catalog" | "row";
+  onPosterError?: (movieId: string) => void;
 }
 
 function getMovieMeta(movie: Movie) {
@@ -23,10 +24,14 @@ function getMovieMeta(movie: Movie) {
   };
 }
 
-export function MovieCard({ movie, variant = "default" }: MovieCardProps) {
+export function MovieCard({ movie, variant = "default", onPosterError }: MovieCardProps) {
   const isRowCard = variant === "row";
   const { id, title, year, poster } = getMovieMeta(movie);
   const topLabel = movie.genres[0] ?? movie.titleType ?? "Movie";
+
+  if (isRowCard && (!poster || poster.trim() === "" || poster === "N/A")) {
+    return null;
+  }
 
   return (
     <Link
@@ -41,7 +46,13 @@ export function MovieCard({ movie, variant = "default" }: MovieCardProps) {
     >
       {isRowCard ? (
         <article className={styles.posterWrap}>
-          <MoviePoster src={poster} title={title} className={styles.poster} />
+          <MoviePoster
+            src={poster}
+            title={title}
+            className={styles.poster}
+            fallbackSrc={null}
+            onError={() => onPosterError?.(id)}
+          />
 
           <div className={styles.rowOverlay}>
             <p className={styles.rowYear}>{year}</p>

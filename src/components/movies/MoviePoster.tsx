@@ -8,11 +8,13 @@ interface MoviePosterProps {
   src?: string;
   title: string;
   className?: string;
+  fallbackSrc?: string | null;
+  onError?: () => void;
 }
 
-function resolveInitialPoster(src?: string) {
+function resolveInitialPoster(src?: string, fallbackSrc: string | null = FALLBACK_POSTER) {
   if (!src || src === "N/A") {
-    return FALLBACK_POSTER;
+    return fallbackSrc ?? undefined;
   }
 
   return src;
@@ -22,12 +24,18 @@ export function MoviePoster({
   src,
   title,
   className,
+  fallbackSrc = FALLBACK_POSTER,
+  onError,
 }: MoviePosterProps) {
-  const [posterSrc, setPosterSrc] = useState(resolveInitialPoster(src));
+  const [posterSrc, setPosterSrc] = useState(resolveInitialPoster(src, fallbackSrc));
 
   useEffect(() => {
-    setPosterSrc(resolveInitialPoster(src));
-  }, [src]);
+    setPosterSrc(resolveInitialPoster(src, fallbackSrc));
+  }, [fallbackSrc, src]);
+
+  if (!posterSrc) {
+    return null;
+  }
 
   return (
     // OMDb poster rendering is intentionally using a plain img element here.
@@ -38,7 +46,10 @@ export function MoviePoster({
       alt={title}
       className={className}
       loading="lazy"
-      onError={() => setPosterSrc(FALLBACK_POSTER)}
+      onError={() => {
+        onError?.();
+        setPosterSrc(fallbackSrc ?? undefined);
+      }}
     />
   );
 }
