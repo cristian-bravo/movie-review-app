@@ -26,7 +26,7 @@ export function HeroSection({
   return (
     <section
       className={cn(
-        "relative flex w-full flex-1 overflow-hidden rounded-[1.75rem] border border-white/10 bg-[linear-gradient(180deg,rgba(8,10,14,0.96),rgba(8,10,14,0.82))] shadow-card backdrop-blur-2xl",
+        "relative flex min-w-0 w-full flex-1 overflow-hidden rounded-[1.75rem] border border-white/10 bg-[linear-gradient(180deg,rgba(8,10,14,0.96),rgba(8,10,14,0.82))] shadow-card backdrop-blur-2xl",
         isLoginLayout ? "w-full max-w-[56rem] p-3 lg:p-4" : "p-5 lg:min-h-full lg:p-6",
       )}
     >
@@ -39,7 +39,7 @@ export function HeroSection({
 
       <div
         className={cn(
-          "relative z-10 flex w-full flex-col justify-center space-y-5",
+          "relative z-10 flex min-w-0 w-full flex-col justify-center space-y-5",
           isLoginLayout ? "max-w-[44rem]" : "max-w-xl",
         )}
       >
@@ -54,7 +54,7 @@ export function HeroSection({
             <div>
               <h1
                 className={cn(
-                  "max-w-xl font-display font-bold leading-tight tracking-tight text-white",
+                  "max-w-full font-display font-bold leading-tight tracking-tight text-white",
                   isLoginLayout ? "text-[2.35rem] lg:max-w-none lg:text-[2.8rem]" : "text-3xl sm:text-4xl lg:text-[2.95rem] xl:text-[3.1rem]",
                 )}
               >
@@ -78,8 +78,8 @@ export function HeroSection({
           {/* Keep the feature area compact so the full hero stays visible on desktop. */}
           <div
             className={cn(
-              "mt-5 grid gap-3 sm:grid-cols-2",
-              isLoginLayout ? "grid-cols-2 gap-4" : "grid-cols-1",
+              "mt-5 grid grid-cols-1 gap-3",
+              isLoginLayout ? "sm:grid-cols-2 sm:gap-4" : "",
             )}
           >
             {featureItems.map((item) => (

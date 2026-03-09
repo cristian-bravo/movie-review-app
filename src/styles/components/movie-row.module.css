@@ -52,9 +52,40 @@
   background: linear-gradient(270deg, color-mix(in srgb, var(--background) 96%, transparent), transparent);
 }
 
+.hitZone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 6;
+  display: block;
+  width: clamp(3.15rem, 15%, 8.5rem);
+  cursor: pointer;
+  transition: opacity 220ms ease, background 220ms ease;
+}
+
+.hitZoneLeft {
+  left: 0;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 9%, transparent), transparent 78%);
+}
+
+.hitZoneRight {
+  right: 0;
+  background: linear-gradient(270deg, color-mix(in srgb, var(--accent) 9%, transparent), transparent 78%);
+}
+
+.hitZone:hover {
+  opacity: 0.92;
+}
+
+.hitZoneDisabled {
+  opacity: 0;
+  cursor: default;
+  pointer-events: none;
+}
+
 .row {
   display: flex;
-  width: fit-content;
+  width: max-content;
   min-width: 0;
   align-items: stretch;
   will-change: transform;
@@ -63,14 +94,16 @@
 .item {
   opacity: 1;
   transform: translateX(0) scale(1);
-  will-change: transform, opacity;
 }
 
 .trackWindow {
+  position: relative;
+  z-index: 2;
   width: 100%;
   max-width: 100%;
   overflow: hidden;
   margin-inline: auto;
+  touch-action: pan-y;
 }
 
 .edgeArrow {
@@ -127,6 +160,12 @@
   transform: translateY(-50%) scale(0.92);
 }
 
+@media (min-width: 1024px) {
+  .hitZone {
+    width: clamp(4.5rem, 18%, 11rem);
+  }
+}
+
 @media (max-width: 767px) {
   .section {
     padding-block: 1.2rem;
@@ -138,9 +177,17 @@
     padding-inline: 1rem;
   }
 
+  .viewport {
+    justify-content: center;
+  }
+
   .edgeArrow {
     height: 2.35rem;
     width: 2.35rem;
+  }
+
+  .hitZone {
+    width: clamp(2.85rem, 16vw, 4.35rem);
   }
 
   .row {

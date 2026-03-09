@@ -42,7 +42,7 @@ export function FeatureCard({ icon, title, description, className }: FeatureCard
   return (
     <article
       className={cn(
-        "group h-full rounded-xl border border-white/10 bg-white/5 p-4 shadow-soft transition duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:border-white/25 hover:bg-white/10 hover:shadow-card",
+        "group min-w-0 w-full h-full rounded-xl border border-white/10 bg-white/5 p-4 shadow-soft transition duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:border-white/25 hover:bg-white/10 hover:shadow-card",
         className,
       )}
     >
@@ -50,7 +50,7 @@ export function FeatureCard({ icon, title, description, className }: FeatureCard
         <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-black/25 text-gold transition duration-300 group-hover:border-white/20 group-hover:text-white">
           {renderIcon(icon)}
         </span>
-        <div className="space-y-2">
+        <div className="min-w-0 space-y-2">
           <h3 className="text-[0.88rem] font-semibold tracking-tight text-white">{title}</h3>
           <p className="text-[0.78rem] leading-4 text-neutral-400">{description}</p>
         </div>
